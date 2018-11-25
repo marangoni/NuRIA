@@ -197,8 +197,7 @@ void loop() {
       botao_press = LOW;
       }
       previousMillisBOT = currentMillis;
-    }
-     
+    }     
 }//loop
 
 //Rotina para mostrar mensagens iniciais no display
@@ -221,17 +220,6 @@ void msginit_display(){
   lcd.setCursor(0,1);
   lcd.print("Luiz Marangoni");
   delay(1000);
-    
-//    if ((unsigned long)(currentMillis - previousMillisMSGinit) >= 1000){
-//  
-//  lcd.clear();
-//  lcd.setCursor(0,0);
-//  lcd.print("Ang:");
-//  lcd.setCursor(8,0);
-//  lcd.print("Dis:");
-//  lcd.setCursor(0,1);
-//  lcd.print("Status: ");
-  
 }
     
 
