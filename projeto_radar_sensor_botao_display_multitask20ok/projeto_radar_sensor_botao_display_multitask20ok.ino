@@ -13,9 +13,6 @@ Funcionamento: Ao detectar um objeto próximo reduz sua velocidade. Quando o obj
 #include <LiquidCrystal_I2C.h>
 
 //Pinos de I/O
-#define pot_vel_pin 0         //pino A0 - potenciometro velocidade
-#define pot_ampl_pin 1        //pino A1 - potenciomentro amplitude
-#define bot_pin 4             //pino botao
 #define servo_pin 9           //pino pwm servo
 #define TRIGGER_PIN  11
 #define ECHO_PIN     12
@@ -31,10 +28,10 @@ unsigned long previousMillisLED=0;
 unsigned long previousMillisMede=0;
 unsigned long previousMillisLCD=0;
 unsigned long previousMillisSTA=0;
-unsigned long previousMillisPOT=0;
+//unsigned long previousMillisPOT=0;
 unsigned long previousMillisMSG=0;
-unsigned long previousMillisBOT=0;
-unsigned long lastDebounceTime=0;
+//unsigned long previousMillisBOT=0;
+//unsigned long lastDebounceTime=0;
 unsigned long previousMillisMSGinit=0;
 unsigned long previousMillisTRACK=0;
 unsigned long previousMillisTRACKang;
@@ -46,9 +43,9 @@ int intervalLED = 200;                //Led pisca a cada 200ms
 int intervalMedeDist = intervalServo; //Distancia medida a cada mudanca de posicao do servo
 int intervalLCD = 100;                //Atualiza LCD a cada 300ms
 int intervalSTA = intervalServo;      //Atualiza STATUS a cada movimento
-int intervalPOT = 5;                  //Atualiza valor potenciometros
+//int intervalPOT = 5;                  //Atualiza valor potenciometros
 int intervalMSG = 5;                  //Verifica se houve intenção de mudança de mensagem no display a cada 5ms
-int intervalBOT = 5;                  //Verifica se botao foi pressionado a cada 5ms
+//int intervalBOT = 5;                  //Verifica se botao foi pressionado a cada 5ms
 int intervalTRACK = 5;                //Intervalo para atualização velocidade e range - confome STATUS
 int intervalTRACKang = 1;             //intervalo para atualização track angle;
 int intervalSerial = 1000;             //Escreve na serial a cada 200ms (5x segundo) 
@@ -67,8 +64,8 @@ int ang_track = -1;            // angulo de detecção - -1 - objeto não detect
 int sensor_ang_correcao = 12;   // angulo de correção de detecção. Seguindo datasheet sensor ultrasonico
 
 //Valores das leituras das entradas analógicas dos potenciometros
-int leitura_pot1_vel = 0;
-int leitura_pot2_ampl = 0;
+//int leitura_pot1_vel = 0;
+//int leitura_pot2_ampl = 0;
 
 //inicializações - leitor sensor ultrasonico
 float distancia_cm;
@@ -81,10 +78,10 @@ String stat[3]={"DETEC!","PROX!!","SCAN.."};
 String status = "SCAN";
 int updown = LOW;       // contagem crescente e decrescente - LOW -> Crescente - HIGH ->decrescente
 int display_msg = LOW;  //flag mensagem a ser mostrada no display - LOW (padrão) - HIGH - vel e ang_ampl
-int botao_press = LOW;  //flag indica se botao foi pressionado - HIGH - (SIM), LOW (Não)
+//int botao_press = LOW;  //flag indica se botao foi pressionado - HIGH - (SIM), LOW (Não)
 
 void setup() {
-   pinMode(bot_pin, INPUT_PULLUP);
+   //pinMode(bot_pin, INPUT_PULLUP);
    Serial.begin(9600);
    lcd.init();                      // inicializa o LCD
    lcd.backlight();                 // acende a luz de fundo
@@ -100,8 +97,8 @@ void loop() {
    
    unsigned long currentMillis = millis();
    intervalServo = vel;
-   ang_max = ang_mid + ang_ampl/2;     //atualiza limites conforme ang_ampl;
-   ang_min = ang_mid - ang_ampl/2;
+//   ang_max = ang_mid + ang_ampl/2;     //atualiza limites conforme ang_ampl;
+//   ang_min = ang_mid - ang_ampl/2;
    
    // Movimente Servomotor
    if ((unsigned long)(currentMillis - previousMillisServo) >= intervalServo){//Já passou o tempo para movimentação do servo? - Se sim execute, se não ignore
@@ -188,29 +185,51 @@ void loop() {
       switch(status_radar){
         case 0: //Modo scan
           vel = vel_default; //velocidade padrão
+          ang_ampl = ang_ampl_default;
+          ang_mid = 90;
+          ang_max = ang_mid + ang_ampl/2;
+          ang_min = ang_mid - ang_ampl/2;
           break;
           
-        case 1://Modo objeto próximo
+        case 1://Modo objeto próximo - restringe a varredura
           vel = (vel_default*4); //25% velocidade padrão
-          //ang_ampl = (ang_ampl_default/4);
+          ang_ampl = 10;
+         
+          if(updown == LOW){//se angulo aumentando;
+            ang_mid = ang + sensor_ang_correcao;
+            if ((ang_mid + ang_ampl/2)<180){
+                ang_max = ang_mid + ang_ampl/4;
+                ang_min = ang_mid - ang_ampl/4;
+                }
+            }
+          else
+          {// se angulo diminuindo
+            ang_mid = ang - sensor_ang_correcao;
+            if ((ang_mid - ang_ampl/2)>0){
+                ang_max = ang_mid + ang_ampl/4;
+                ang_min = ang_mid - ang_ampl/4;
+                }
+            }
+                    
         break;
-        
-      }
-      previousMillisTRACK = currentMillis;
+     }       
+        previousMillisTRACK = currentMillis;
     }
 
      //Escrever valores na serial - depuração
     if ((unsigned long)(currentMillis - previousMillisSerial) >= intervalSerial){//Já passou o tempo para atualização range e velocidade?
         Serial.print("vel: ");
         Serial.println(vel);
+        Serial.print("ang: ");
+        Serial.println(ang);
         Serial.print("ampl:" );
         Serial.println(ang_ampl);
         Serial.print("mid_angle: ");
-        Serial.println(ang_max);
-        Serial.print("ang_mid: ");
-        Serial.println(ang_max);
+        Serial.println(ang_mid);
         Serial.print("ang_min: ");
         Serial.println(ang_min);
+        Serial.print("ang_max: ");
+        Serial.println(ang_max);
         Serial.print("track_angle: ");
         Serial.println(ang_track);
         Serial.print("status: ");
@@ -235,44 +254,7 @@ void loop() {
       
       previousMillisTRACKang = currentMillis;
     }
-
-    
-    //Ler os potenciômetros - atualização dos valores de velocidade_default e amplitude_default
-//    if ((unsigned long)(currentMillis - previousMillisPOT) >= intervalPOT){//Já passou o tempo para verificação dos potenciômetros?
-//      //Leitura das entradas analógicas - potenciometros
-//      leitura_pot1_vel = analogRead(pot_vel_pin);
-//      leitura_pot2_ampl = analogRead(pot_ampl_pin);
-//      
-//      //Conversão para os valores lidos para os do projeto - velocidade 10 a 30, e amplitude 0 a 180
-//      vel_default = map(leitura_pot1_vel,0,1023,10,30);
-//      ang_ampl = map(leitura_pot2_ampl,0,1023,0,180);
-//
-//      //Atualizar os valores de angulo máximo e mínimo
-//      ang_max = ang_mid + ang_ampl/2;
-//      ang_min = ang_mid - ang_ampl/2;
-//      previousMillisPOT = currentMillis;
-//}
-
- //Atualizar a mensagem
-    if ((unsigned long)(currentMillis - previousMillisMSG) >= intervalMSG){//Já passou o tempo para atualização da mensagem no display?
-      if(botao_press == HIGH){
-          display_msg = !display_msg;
-      }    
-    previousMillisMSG = currentMillis;
-  }
-
-  //Verificar se botão foi pressionado
-    if ((unsigned long)(currentMillis - previousMillisBOT) >= intervalBOT){//Já passou o tempo para verificar se o botão foi pressionado?
-      if (digitalRead(bot_pin)==LOW)
-      {
-      botao_press = HIGH;
-      }
-        else
-      {
-      botao_press = LOW;
-      }
-      previousMillisBOT = currentMillis;
-    }     
+     
 }//loop
 
 //Rotina para mostrar mensagens iniciais no display
