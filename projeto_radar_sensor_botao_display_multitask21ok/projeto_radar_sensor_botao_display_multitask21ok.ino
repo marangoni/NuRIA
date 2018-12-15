@@ -62,6 +62,7 @@ int sensor_ang_correcao = 12;   // angulo de correção de detecção. Seguindo 
 //Variaveis do display
 char linha0[17]; //um array de caracteres para cada linha (+ posicao a mais pelo CR)
 char linha1[17];
+char float_str[8];//distancia convertida em string
 
 String tela_1_linha0 = "Ang:    Dis:    ";
 String tela_1_linha1 = "Status:         ";
@@ -139,8 +140,11 @@ void loop() {
             lcd.print(linha0);
             lcd.setCursor(0,1);
             lcd.print(linha1);
-            sprintf(linha0, "Ang:%-4d", ang);
-            //sprintf(linha0, "Dis:%-8d",distancia_cm);
+            sprintf(linha0, "Ang:%-3d", ang) + sprintf(linha0, "DIS:%-3d", ang);
+            //dtostrf(distancia_cm,2,1,float_str);
+            //sprintf(linha0, "Dis:%-4d", float_str);
+            
+            //sprintf(linha0, "Dis:%f",distancia_cm);
             //sprintf(msg, “Temperature: %-7d”, temperature);
 //          lcd.clear();
 //          lcd.setCursor(0,0);
