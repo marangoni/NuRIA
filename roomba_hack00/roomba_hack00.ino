@@ -114,6 +114,7 @@ void turnCW(unsigned short velocity, unsigned short degrees)
    clamp(velocity, 0, 500);
    delay(6600); // ajuste este delay conforme a velocidade para correção do angulo
    drive(0,0);
+   //observe este código
 }
 //---------------------------------------------------------------
 
