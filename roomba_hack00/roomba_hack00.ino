@@ -28,7 +28,7 @@ void setup()
   startSafe(); // Start Roomba in Safe Mode
 
    while (digitalRead(buttonPin)) { } // wait button to be pressed to continous run code
-
+   BT1.print("Super advanced code...");
    turnCW (40, 180); //testa se o roomba ira rodar no sentido horário 180 e parar. Ajuste o delay da funcao turnCW até que isso ocorra
    
 }
