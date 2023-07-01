@@ -20,8 +20,8 @@ void setup()
   pinMode(buttonPin, INPUT_PULLUP); //used for "start" for test purposes
 
   delay(2000);
-  Serial.print("Roomba Remote Control");
-  BT1.print("Roomba Remote Control");
+  Serial.print("Roomba Remote Control...");
+  BT1.print("Roomba Remote Control...");
   BT1.println('\n');
   
   wakeUp ();   // Wake-up Roomba
